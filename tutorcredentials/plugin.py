@@ -80,22 +80,6 @@ for service, template_path in MY_INIT_TASKS:
 
 
 ########################################
-# Credentials Public Host
-########################################
-
-
-@tutor_hooks.Filters.APP_PUBLIC_HOSTS.add()
-def _print_credentials_public_hosts(
-    hosts: list[str], context_name: t.Literal["local", "dev"]
-) -> list[str]:
-    if context_name == "dev":
-        hosts += ["{{ CREDENTIALS_HOST }}:8150"]
-    else:
-        hosts += ["{{ CREDENTIALS_HOST }}"]
-    return hosts
-
-
-########################################
 # Mount Credentials
 ########################################
 
@@ -110,19 +94,6 @@ def _mount_credentials_apps(
     if path_basename == REPO_NAME:
         app_name = REPO_NAME
         mounts += [(app_name, "/openedx/credentials")]
-    return mounts
-
-
-# Bind-mount repo at build-time, both for prod and dev images
-@tutor_hooks.Filters.IMAGES_BUILD_MOUNTS.add()
-def _mount_credentials_on_build(
-    mounts: list[tuple[str, str]], host_path: str
-) -> list[tuple[str, str]]:
-    path_basename = os.path.basename(host_path)
-    if path_basename == REPO_NAME:
-        app_name = REPO_NAME
-        mounts.append((app_name, f"{app_name}-src"))
-        mounts.append((f"{app_name}-dev", f"{app_name}-src"))
     return mounts
 
 
